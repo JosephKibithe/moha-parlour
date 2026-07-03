@@ -88,3 +88,36 @@ export function formatNairobiTime(value: string | Date) {
     hour12: true,
   }).format(new Date(value));
 }
+export function getNairobiDateInputValue(value: string | Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: NAIROBI_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(value));
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function getNairobiTimeInputValue(value: string | Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: NAIROBI_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(value));
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  return `${values.hour}:${values.minute}`;
+}

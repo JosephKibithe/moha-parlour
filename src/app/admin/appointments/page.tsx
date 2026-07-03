@@ -15,8 +15,8 @@ import { createAppointment, updateAppointmentStatus } from "./actions";
 const timeSlots: string[] = [];
 for (let hour = 9; hour <= 17; hour++) {
   for (let min = 0; min <= 45; min += 15) {
-    const hStr = String(hour).padStart(2, '0');
-    const mStr = String(min).padStart(2, '0');
+    const hStr = String(hour).padStart(2, "0");
+    const mStr = String(min).padStart(2, "0");
     timeSlots.push(`${hStr}:${mStr}`);
   }
 }
@@ -222,7 +222,9 @@ export default async function AppointmentsPage({
       {success === "status-updated" ? (
         <Notice type="success">Appointment status updated.</Notice>
       ) : null}
-
+      {success === "appointment-updated" ? (
+        <Notice type="success">Appointment updated successfully.</Notice>
+      ) : null}
       {error ? <AppointmentError error={error} /> : null}
 
       <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_390px]">
@@ -543,7 +545,11 @@ export default async function AppointmentsPage({
                   className="w-full rounded-xl border border-stone-700 bg-stone-900 px-3 py-3 text-white outline-none focus:border-rose-400"
                 >
                   {timeSlots.map((t) => (
-                    <option key={t} value={t} className="bg-stone-900 text-white">
+                    <option
+                      key={t}
+                      value={t}
+                      className="bg-stone-900 text-white"
+                    >
                       {formatTime12(t)}
                     </option>
                   ))}
@@ -582,7 +588,6 @@ export default async function AppointmentsPage({
     </AdminShell>
   );
 }
-
 function AppointmentStatusActions({
   appointmentId,
   status,
@@ -593,13 +598,23 @@ function AppointmentStatusActions({
   selectedDate: string;
 }) {
   const actions = nextActions[status] ?? [];
+  const canEdit = status === "requested" || status === "confirmed";
 
-  if (!actions.length) {
+  if (!actions.length && !canEdit) {
     return null;
   }
 
   return (
     <div className="flex shrink-0 flex-wrap gap-2 lg:justify-end">
+      {canEdit ? (
+        <Link
+          href={`/admin/appointments/${appointmentId}/edit`}
+          className="rounded-xl border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
+        >
+          Edit
+        </Link>
+      ) : null}
+
       {actions.map((action) => (
         <form key={action.status} action={updateAppointmentStatus}>
           <input type="hidden" name="appointmentId" value={appointmentId} />
@@ -628,7 +643,6 @@ function AppointmentStatusActions({
     </div>
   );
 }
-
 function Notice({
   type,
   children,
