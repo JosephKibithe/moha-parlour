@@ -12,6 +12,23 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { createAppointment, updateAppointmentStatus } from "./actions";
 
+const timeSlots: string[] = [];
+for (let hour = 9; hour <= 17; hour++) {
+  for (let min = 0; min <= 45; min += 15) {
+    const hStr = String(hour).padStart(2, '0');
+    const mStr = String(min).padStart(2, '0');
+    timeSlots.push(`${hStr}:${mStr}`);
+  }
+}
+
+function formatTime12(time24: string) {
+  const [h, m] = time24.split(":");
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${m} ${ampm}`;
+}
+
 type AppointmentsPageProps = {
   searchParams: Promise<{
     date?: string;
@@ -518,14 +535,19 @@ export default async function AppointmentsPage({
                   Start time
                 </label>
 
-                <input
+                <select
                   id="appointmentTime"
                   name="appointmentTime"
-                  type="time"
                   required
                   defaultValue="09:00"
                   className="w-full rounded-xl border border-stone-700 bg-stone-900 px-3 py-3 text-white outline-none focus:border-rose-400"
-                />
+                >
+                  {timeSlots.map((t) => (
+                    <option key={t} value={t} className="bg-stone-900 text-white">
+                      {formatTime12(t)}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
