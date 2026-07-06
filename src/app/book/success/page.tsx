@@ -1,6 +1,12 @@
 import Link from "next/link";
+import { ArrowUpRight, MessageCircle, Sparkles } from "lucide-react";
+import {
+  BookingConfirmationCard,
+  type BookingConfirmationDetails,
+} from "@/components/public/booking-confirmation-card";
+import { MohaPublicHeader } from "@/components/public/moha-public-header";
+import { mohaPublic } from "@/lib/moha-public";
 import { createClient } from "@/lib/supabase/server";
-import { formatNairobiDate, formatNairobiTime } from "@/lib/moha-time";
 
 type SuccessPageProps = {
   searchParams: Promise<{
@@ -14,20 +20,18 @@ export default async function BookingSuccessPage({
   const { id } = await searchParams;
   const supabase = await createClient();
 
-  let appointment: any = null;
-  let service: any = null;
-  let technician: any = null;
+  let confirmationDetails: BookingConfirmationDetails | null = null;
 
   if (id) {
     const { data: aptData } = await supabase
       .from("appointments")
-      .select("id, appointment_start, appointment_end, customer_name, service_id, staff_id")
+      .select(
+        "id, appointment_start, appointment_end, customer_name, service_id, staff_id",
+      )
       .eq("id", id)
       .maybeSingle();
 
     if (aptData) {
-      appointment = aptData;
-
       const [serviceRes, staffRes] = await Promise.all([
         supabase
           .from("services")
@@ -43,122 +47,138 @@ export default async function BookingSuccessPage({
           : Promise.resolve({ data: null }),
       ]);
 
-      service = serviceRes.data;
-      technician = staffRes.data;
+      confirmationDetails = {
+        id: aptData.id,
+        clientName: aptData.customer_name || "there",
+        serviceName: serviceRes.data?.name || "Nail pampering session",
+        servicePrice: serviceRes.data?.price_kes,
+        serviceDuration: serviceRes.data?.duration_minutes,
+        appointmentStart: aptData.appointment_start,
+        appointmentEnd: aptData.appointment_end,
+        technicianName:
+          staffRes.data?.full_name ?? "First available MOHA stylist",
+      };
     }
   }
 
-  const clientName = appointment?.customer_name || "Gorgeous";
-  const serviceName = service?.name || "Nail pampering session";
-  const servicePrice = service?.price_kes;
-  const serviceDuration = service?.duration_minutes;
-  const techName = technician?.full_name ?? "First available MOHA stylist";
+  const clientName = confirmationDetails?.clientName ?? "Gorgeous";
+  const whatsappUrl = mohaPublic.phoneE164
+    ? `https://wa.me/${mohaPublic.phoneE164.replace(/[^\d]/g, "")}`
+    : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-stone-50 px-6 py-12 text-stone-900">
-      <section className="w-full max-w-xl rounded-3xl bg-white p-8 text-center shadow-xl ring-1 ring-stone-200/50 md:p-12">
-        
-        {/* Cute Icon Header */}
-        <div className="flex justify-center gap-2 text-4xl animate-bounce">
-          <span>🎉</span>
-          <span>💅</span>
-          <span>✨</span>
-        </div>
+    <main className="moha-editorial min-h-screen overflow-x-clip bg-[#0d0c0e] text-[#f7f3ef]">
+      <MohaPublicHeader bookCtaLabel="Book another set" />
 
-        <p className="mt-6 text-xs font-bold tracking-[0.3em] text-rose-500">
-          MOHA NAIL PARLOUR
-        </p>
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute left-1/2 top-0 -z-10 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-[#7a334b]/35 blur-[140px]" />
 
-        <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-stone-900 md:text-4xl">
-          We can't wait to pamper you!
-        </h1>
-
-        <p className="mt-5 text-base leading-7 text-stone-600">
-          Yay, <span className="font-bold text-stone-900">{clientName}</span>! Your booking request is safely in our hands. Our team is double-checking our calendars, and we will text or WhatsApp you shortly to lock in your session. Get ready to show your nails some serious love! 💕
-        </p>
-
-        {appointment ? (
-          <div className="mt-8 overflow-hidden rounded-2xl border border-rose-100 bg-rose-50/30 p-6 text-left shadow-sm">
-            <h2 className="text-xs font-bold tracking-wider text-rose-600 uppercase">
-              Your Booking Summary
-            </h2>
-            
-            <div className="mt-4 space-y-4 text-sm divide-y divide-rose-100/50">
-              
-              {/* Service & Price */}
-              <div className="flex justify-between items-start pt-1">
-                <div>
-                  <p className="font-bold text-stone-900">{serviceName}</p>
-                  {serviceDuration ? (
-                    <p className="text-xs text-stone-500 mt-0.5">{serviceDuration} mins of bliss</p>
-                  ) : null}
-                </div>
-                {servicePrice ? (
-                  <span className="font-bold text-rose-600 shrink-0">
-                    KES {servicePrice.toLocaleString()}
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Date & Time */}
-              <div className="pt-4">
-                <p className="text-xs text-stone-400 font-semibold uppercase tracking-wider">When</p>
-                <p className="font-bold text-stone-900 mt-1">
-                  {formatNairobiDate(appointment.appointment_start)}
-                </p>
-                <p className="text-stone-600 mt-0.5">
-                  at {formatNairobiTime(appointment.appointment_start)} to {formatNairobiTime(appointment.appointment_end)}
-                </p>
-              </div>
-
-              {/* Technician */}
-              <div className="pt-4">
-                <p className="text-xs text-stone-400 font-semibold uppercase tracking-wider">Stylist</p>
-                <p className="font-bold text-stone-900 mt-1">
-                  {techName}
-                </p>
-              </div>
-
-            </div>
+        <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8 md:py-20 lg:px-10">
+          <div className="moha-hero-reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-[#efb0c4]">
+            <Sparkles className="h-3.5 w-3.5" />
+            REQUEST RECEIVED
           </div>
-        ) : null}
 
-        {/* Next Steps Section */}
-        <div className="mt-8 rounded-2xl bg-stone-50 p-6 text-left border border-stone-200/60">
-          <h3 className="font-bold text-stone-900 text-sm">🌸 What happens next?</h3>
-          <ul className="mt-3 space-y-3 text-xs leading-6 text-stone-600">
-            <li className="flex gap-2.5">
-              <span className="text-rose-500 shrink-0">1.</span>
-              <span><strong>Availability Check:</strong> We review your stylist choice and time slot immediately.</span>
-            </li>
-            <li className="flex gap-2.5">
-              <span className="text-rose-500 shrink-0">2.</span>
-              <span><strong>Confirmation Alert:</strong> You will get an SMS or WhatsApp message from MOHA once it's approved.</span>
-            </li>
-            <li className="flex gap-2.5">
-              <span className="text-rose-500 shrink-0">3.</span>
-              <span><strong>Nail Inspiration:</strong> Take screenshot ideas of shapes and art to show your technician when you arrive! 📸</span>
-            </li>
-          </ul>
+          <h1 className="moha-display moha-hero-reveal mt-6 text-5xl leading-[0.9] tracking-[-0.045em] sm:text-6xl">
+            We can&apos;t wait to
+            <br />
+            <span className="italic text-[#efb0c4]">pamper you.</span>
+          </h1>
+
+          <p className="moha-hero-reveal mt-6 max-w-2xl text-lg leading-8 text-white/60">
+            Thank you,{" "}
+            <span className="font-semibold text-white">{clientName}</span>. Your
+            booking request is safely with MOHA. We&apos;ll review your
+            preferred time and reach out shortly to confirm your session.
+          </p>
+
+          {confirmationDetails ? (
+            <div className="mt-10">
+              <BookingConfirmationCard details={confirmationDetails} />
+            </div>
+          ) : (
+            <div className="moha-booking-card-reveal mt-10 rounded-[1.8rem] border border-dashed border-white/20 bg-white/5 p-8 text-center">
+              <p className="text-lg font-semibold text-white">
+                Your request was received.
+              </p>
+
+              <p className="mt-2 text-sm leading-6 text-white/55">
+                MOHA will contact you shortly to confirm your appointment
+                details.
+              </p>
+            </div>
+          )}
+
+          <div className="moha-hero-reveal mt-8 rounded-[1.8rem] border border-white/10 bg-[#161217] p-6 sm:p-7">
+            <h2 className="text-xs font-bold tracking-[0.2em] text-[#d97b98]">
+              WHAT HAPPENS NEXT
+            </h2>
+
+            <ol className="mt-5 space-y-4 text-sm leading-6 text-white/60">
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#d97b98]/40 text-xs font-bold text-[#efb0c4]">
+                  1
+                </span>
+                <span>
+                  <strong className="text-white">Availability check.</strong>{" "}
+                  We review your stylist choice and preferred time slot right
+                  away.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#d97b98]/40 text-xs font-bold text-[#efb0c4]">
+                  2
+                </span>
+                <span>
+                  <strong className="text-white">Confirmation message.</strong>{" "}
+                  You&apos;ll get an SMS or WhatsApp from MOHA once your
+                  appointment is approved.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#d97b98]/40 text-xs font-bold text-[#efb0c4]">
+                  3
+                </span>
+                <span>
+                  <strong className="text-white">Bring your inspo.</strong>{" "}
+                  Save nail shape and art references to show your technician
+                  when you arrive.
+                </span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="moha-hero-reveal mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f7f3ef] px-5 py-3.5 font-semibold text-[#141014] transition hover:bg-[#efb0c4]"
+            >
+              Back to home
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+
+            <Link
+              href="/book"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-5 py-3.5 font-semibold text-white transition hover:border-white hover:bg-white/10"
+            >
+              Book another session
+            </Link>
+
+            {whatsappUrl ? (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d97b98]/40 px-5 py-3.5 font-semibold text-[#efb0c4] transition hover:border-[#efb0c4] hover:bg-[#d97b98]/10"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message MOHA
+              </a>
+            ) : null}
+          </div>
         </div>
-
-        {/* Navigation Buttons */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/"
-            className="rounded-xl bg-stone-950 px-6 py-3 font-semibold text-white transition hover:bg-stone-800 text-sm shadow-md shadow-stone-900/10"
-          >
-            Back to Home 🏠
-          </Link>
-
-          <Link
-            href="/book"
-            className="rounded-xl border border-stone-300 px-6 py-3 font-semibold text-stone-800 transition hover:bg-stone-50 text-sm"
-          >
-            Book Another Session 🌸
-          </Link>
-        </div>
-
       </section>
     </main>
   );

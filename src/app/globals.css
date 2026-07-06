@@ -113,10 +113,17 @@ html {
   }
 }
 
+.moha-booking-card-reveal {
+  opacity: 0;
+  animation: moha-fade-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 220ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .moha-hero-reveal,
   .moha-mosaic-reveal,
-  .moha-tile-inner {
+  .moha-tile-inner,
+  .moha-booking-card-reveal {
     animation: none !important;
     opacity: 1 !important;
     filter: none !important;

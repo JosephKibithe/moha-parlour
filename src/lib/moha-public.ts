@@ -14,10 +14,10 @@ export const mohaPublic = {
 
   // Replace these before launch.
   phoneDisplay: "0783046015",
-  phoneE164: "",
+  phoneE164: "+254783046015",
   locationName: "   Lower Kabete",
   locationDetail: "near the shopping centre",
-  mapsUrl: "https://maps.app.goo.gl/j7sE7hYd178174aP8",
+  mapsUrl: "https://maps.app.goo.gl/XJjHwJq8X38d7XJk9",
   instagramUrl: "https://www.instagram.com/moha_beautystudio/",
 
   /*
@@ -27,18 +27,27 @@ export const mohaPublic = {
    * Example:
    * "Gel manicure": "/images/services/gel-manicure.jpg",
    */
-  serviceImages: {} as Record<string, string>,
+  serviceImages: {
+    "Gel manicure": "/images/services/gel-manicure.jpg",
+    "Acrylic overlay": "/images/services/acrylic-overlay.jpg",
+    "Short acrylic extensions": "/images/services/short-acrylic.jpg",
+  },
 
-  /*
-   * Add your best real nail-set photos here later.
-   * The gallery stays hidden until at least one photo is added.
-   *
-   * Example:
-   * {
-   *   title: "Soft glam extensions",
-   *   subtitle: "Acrylic set",
-   *   image: "/images/gallery/look-1.jpg",
-   * },
-   */
-  featuredLooks: [] as MohaGalleryItem[],
+  featuredLooks: [
+    {
+      title: "Soft chrome almond",
+      subtitle: "Acrylic extensions",
+      image: "/images/gallery/chrome-almond.jpg",
+    },
+    {
+      title: "Clean French tips",
+      subtitle: "Gel manicure",
+      image: "/images/gallery/french-tips.jpg",
+    },
+    {
+      title: "Soft glam nude set",
+      subtitle: "Signature MOHA look",
+      image: "/images/gallery/soft-glam.jpg",
+    },
+  ],
 };

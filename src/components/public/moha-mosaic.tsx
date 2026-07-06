@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type MosaicTile = {
@@ -174,10 +173,6 @@ export function MohaMosaic({ images }: { images: string[] }) {
       className="relative mx-auto aspect-[4/5] w-full max-w-[560px] select-none"
     >
       <div className="absolute inset-[11%] rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-[#2a1720] via-[#151217] to-[#0d0c0e] blur-[1px]" />
-
-      <div className="absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-[#0d0c0e]/85 text-[#d97b98] shadow-2xl backdrop-blur">
-        <Sparkles className="h-7 w-7" />
-      </div>
 
       {mosaicTiles.map((tile, index) => {
         const image = images.length ? images[index % images.length] : null;

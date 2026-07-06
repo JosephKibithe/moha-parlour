@@ -1,4 +1,12 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Clock3,
+  Sparkles,
+} from "lucide-react";
+import { MohaPublicHeader } from "@/components/public/moha-public-header";
 import { createPublicBooking } from "./actions";
 import { addDaysToNairobiDate, getNairobiDateString } from "@/lib/moha-time";
 import { createClient } from "@/lib/supabase/server";
@@ -36,6 +44,9 @@ const bookingErrors: Record<string, string> = {
     "You already sent a booking request for this exact time.",
   "booking-failed": "Your booking request could not be sent. Please try again.",
 };
+
+const fieldClassName =
+  "w-full rounded-xl border border-white/15 bg-[#111013] px-4 py-3 text-white outline-none placeholder:text-white/35 transition focus:border-[#d97b98] focus:ring-1 focus:ring-[#d97b98]/40";
 
 function formatBusinessTime(value: string | null) {
   if (!value) {
@@ -113,293 +124,359 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
   const latestBookingDate = addDaysToNairobiDate(today, 180);
 
   return (
-    <main className="min-h-screen bg-stone-50 text-stone-900">
-      <section className="mx-auto max-w-6xl px-6 py-10 md:py-16">
-        <Link
-          href="/"
-          className="text-sm font-medium text-stone-500 transition hover:text-stone-900"
-        >
-          ← Back to MOHA
-        </Link>
+    <main className="moha-editorial min-h-screen overflow-x-clip bg-[#0d0c0e] text-[#f7f3ef]">
+      <MohaPublicHeader bookCtaLabel="Book your set" />
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <section>
-            <p className="text-xs font-bold tracking-[0.3em] text-rose-500">
-              MOHA NAIL PARLOUR
-            </p>
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute left-1/2 top-0 -z-10 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#7a334b]/30 blur-[130px]" />
 
-            <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
-              Request an appointment
-            </h1>
+        <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 md:py-16 lg:px-10">
+          <Link
+            href="/"
+            className="moha-hero-reveal inline-flex items-center gap-2 text-sm font-medium text-white/50 transition hover:text-white"
+          >
+            ← Back to MOHA
+          </Link>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-stone-600">
-              Choose your preferred service, technician, date, and time. MOHA
-              will review your request before confirming your appointment.
-            </p>
-
-            {error ? (
-              <div className="mt-7 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-800">
-                {bookingErrors[error] ??
-                  "Something went wrong. Please try again."}
+          <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
+            <section>
+              <div className="moha-hero-reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-[#efb0c4]">
+                <Sparkles className="h-3.5 w-3.5" />
+                BOOK YOUR SET
               </div>
-            ) : null}
 
-            {!services?.length ? (
-              <div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
-                <p className="font-semibold">
-                  MOHA is not accepting online bookings yet.
-                </p>
+              <h1 className="moha-display moha-hero-reveal mt-6 max-w-3xl text-5xl leading-[0.9] tracking-[-0.045em] sm:text-6xl lg:text-[4.5rem]">
+                Request an
+                <br />
+                <span className="italic text-[#efb0c4]">appointment.</span>
+              </h1>
 
-                <p className="mt-2 text-sm leading-6">
-                  Please contact the parlour directly for an appointment.
-                </p>
+              <p className="moha-hero-reveal mt-6 max-w-2xl text-lg leading-8 text-white/60">
+                Choose your preferred service, technician, date, and time. MOHA
+                will review your request before confirming your appointment.
+              </p>
+
+              <div className="moha-hero-reveal mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+                <BookingStep
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  title="Pick your time"
+                  description="Select a preferred date and slot."
+                />
+
+                <BookingStep
+                  icon={<Sparkles className="h-4 w-4" />}
+                  title="Choose your set"
+                  description="Browse live MOHA services."
+                />
+
+                <BookingStep
+                  icon={<Clock3 className="h-4 w-4" />}
+                  title="MOHA confirms"
+                  description="We reach out once approved."
+                />
               </div>
-            ) : (
-              <form action={createPublicBooking} className="mt-8 space-y-7">
-                <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-bold tracking-[0.2em] text-rose-500">
-                    YOUR DETAILS
+
+              {error ? (
+                <div className="moha-hero-reveal mt-8 rounded-[1.4rem] border border-[#d97b98]/40 bg-[#d97b98]/10 px-5 py-4 text-sm font-medium text-[#efb0c4]">
+                  {bookingErrors[error] ??
+                    "Something went wrong. Please try again."}
+                </div>
+              ) : null}
+
+              {!services?.length ? (
+                <div className="moha-hero-reveal mt-8 rounded-[1.8rem] border border-dashed border-white/20 bg-white/5 p-8">
+                  <p className="text-lg font-semibold text-white">
+                    MOHA is not accepting online bookings yet.
                   </p>
 
-                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="fullName"
-                        className="mb-2 block text-sm font-semibold"
-                      >
-                        Full name
-                      </label>
-
-                      <input
-                        id="fullName"
-                        name="fullName"
-                        required
-                        autoComplete="name"
-                        placeholder="Your name"
-                        className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none placeholder:text-stone-400 focus:border-rose-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="phone"
-                        className="mb-2 block text-sm font-semibold"
-                      >
-                        Phone number
-                      </label>
-
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        required
-                        autoComplete="tel"
-                        placeholder="0712 345 678"
-                        className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none placeholder:text-stone-400 focus:border-rose-400"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-bold tracking-[0.2em] text-rose-500">
-                    APPOINTMENT DETAILS
+                  <p className="mt-2 text-sm leading-6 text-white/60">
+                    Please contact the parlour directly for an appointment.
                   </p>
+                </div>
+              ) : (
+                <form action={createPublicBooking} className="mt-10 space-y-6">
+                  <section className="rounded-[1.8rem] border border-white/10 bg-[#161217] p-6 sm:p-7">
+                    <p className="text-xs font-bold tracking-[0.2em] text-[#d97b98]">
+                      YOUR DETAILS
+                    </p>
 
-                  <div className="mt-5 space-y-5">
-                    <div>
-                      <label
-                        htmlFor="serviceId"
-                        className="mb-2 block text-sm font-semibold"
-                      >
-                        Select a service
-                      </label>
-
-                      <select
-                        id="serviceId"
-                        name="serviceId"
-                        required
-                        defaultValue=""
-                        className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-rose-400"
-                      >
-                        <option value="" disabled>
-                          Choose a service
-                        </option>
-
-                        {services.map((service) => (
-                          <option key={service.id} value={service.id}>
-                            {service.name} — KSh{" "}
-                            {service.price_kes.toLocaleString()} ·{" "}
-                            {service.duration_minutes} min
-                          </option>
-                        ))}
-                      </select>
-
-                      <p className="mt-2 text-sm text-stone-500">
-                        The listed price is the current MOHA service price.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="staffId"
-                        className="mb-2 block text-sm font-semibold"
-                      >
-                        Preferred technician{" "}
-                        <span className="font-normal text-stone-400">
-                          (optional)
-                        </span>
-                      </label>
-
-                      <select
-                        id="staffId"
-                        name="staffId"
-                        defaultValue=""
-                        className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-rose-400"
-                      >
-                        <option value="">Any available MOHA technician</option>
-
-                        {technicians?.map((technician) => (
-                          <option key={technician.id} value={technician.id}>
-                            {technician.full_name}
-                            {technician.specialty
-                              ? ` — ${technician.specialty}`
-                              : ""}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="mt-5 grid gap-5 sm:grid-cols-2">
                       <div>
                         <label
-                          htmlFor="appointmentDate"
-                          className="mb-2 block text-sm font-semibold"
+                          htmlFor="fullName"
+                          className="mb-2 block text-sm font-semibold text-white/85"
                         >
-                          Preferred date
+                          Full name
                         </label>
 
                         <input
-                          id="appointmentDate"
-                          name="appointmentDate"
-                          type="date"
+                          id="fullName"
+                          name="fullName"
                           required
-                          min={today}
-                          max={latestBookingDate}
-                          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-rose-400"
+                          autoComplete="name"
+                          placeholder="Your name"
+                          className={fieldClassName}
                         />
                       </div>
 
                       <div>
                         <label
-                          htmlFor="appointmentTime"
-                          className="mb-2 block text-sm font-semibold"
+                          htmlFor="phone"
+                          className="mb-2 block text-sm font-semibold text-white/85"
                         >
-                          Preferred time
+                          Phone number
+                        </label>
+
+                        <input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          required
+                          autoComplete="tel"
+                          placeholder="0712 345 678"
+                          className={fieldClassName}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[1.8rem] border border-white/10 bg-[#161217] p-6 sm:p-7">
+                    <p className="text-xs font-bold tracking-[0.2em] text-[#d97b98]">
+                      APPOINTMENT DETAILS
+                    </p>
+
+                    <div className="mt-5 space-y-5">
+                      <div>
+                        <label
+                          htmlFor="serviceId"
+                          className="mb-2 block text-sm font-semibold text-white/85"
+                        >
+                          Select a service
                         </label>
 
                         <select
-                          id="appointmentTime"
-                          name="appointmentTime"
+                          id="serviceId"
+                          name="serviceId"
                           required
                           defaultValue=""
-                          className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-rose-400 animate-none"
+                          className={fieldClassName}
                         >
-                          <option value="" disabled>
-                            Select preferred time
+                          <option value="" disabled className="bg-[#161217]">
+                            Choose a service
                           </option>
-                          {timeSlots.map((t) => (
-                            <option key={t} value={t}>
-                              {formatBusinessTime(t)}
+
+                          {services.map((service) => (
+                            <option
+                              key={service.id}
+                              value={service.id}
+                              className="bg-[#161217]"
+                            >
+                              {service.name} — KSh{" "}
+                              {service.price_kes.toLocaleString()} ·{" "}
+                              {service.duration_minutes} min
+                            </option>
+                          ))}
+                        </select>
+
+                        <p className="mt-2 text-sm text-white/45">
+                          The listed price is the current MOHA service price.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="staffId"
+                          className="mb-2 block text-sm font-semibold text-white/85"
+                        >
+                          Preferred technician{" "}
+                          <span className="font-normal text-white/35">
+                            (optional)
+                          </span>
+                        </label>
+
+                        <select
+                          id="staffId"
+                          name="staffId"
+                          defaultValue=""
+                          className={fieldClassName}
+                        >
+                          <option value="" className="bg-[#161217]">
+                            Any available MOHA technician
+                          </option>
+
+                          {technicians?.map((technician) => (
+                            <option
+                              key={technician.id}
+                              value={technician.id}
+                              className="bg-[#161217]"
+                            >
+                              {technician.full_name}
+                              {technician.specialty
+                                ? ` — ${technician.specialty}`
+                                : ""}
                             </option>
                           ))}
                         </select>
                       </div>
+
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="appointmentDate"
+                            className="mb-2 block text-sm font-semibold text-white/85"
+                          >
+                            Preferred date
+                          </label>
+
+                          <input
+                            id="appointmentDate"
+                            name="appointmentDate"
+                            type="date"
+                            required
+                            min={today}
+                            max={latestBookingDate}
+                            className={`${fieldClassName} [color-scheme:dark]`}
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="appointmentTime"
+                            className="mb-2 block text-sm font-semibold text-white/85"
+                          >
+                            Preferred time
+                          </label>
+
+                          <select
+                            id="appointmentTime"
+                            name="appointmentTime"
+                            required
+                            defaultValue=""
+                            className={fieldClassName}
+                          >
+                            <option value="" disabled className="bg-[#161217]">
+                              Select preferred time
+                            </option>
+                            {timeSlots.map((t) => (
+                              <option
+                                key={t}
+                                value={t}
+                                className="bg-[#161217]"
+                              >
+                                {formatBusinessTime(t)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="clientNote"
+                          className="mb-2 block text-sm font-semibold text-white/85"
+                        >
+                          Nail request or inspiration note{" "}
+                          <span className="font-normal text-white/35">
+                            (optional)
+                          </span>
+                        </label>
+
+                        <textarea
+                          id="clientNote"
+                          name="clientNote"
+                          rows={4}
+                          maxLength={500}
+                          placeholder="Example: Short almond shape, nude base with simple chrome details."
+                          className={`${fieldClassName} resize-none leading-6`}
+                        />
+                      </div>
                     </div>
+                  </section>
 
-                    <div>
-                      <label
-                        htmlFor="clientNote"
-                        className="mb-2 block text-sm font-semibold"
-                      >
-                        Nail request or inspiration note{" "}
-                        <span className="font-normal text-stone-400">
-                          (optional)
-                        </span>
-                      </label>
+                  <section className="overflow-hidden rounded-[1.8rem] border border-[#d97b98]/30 bg-[#181318] p-6 sm:p-7">
+                    <p className="text-sm font-semibold text-white">
+                      Your appointment is not confirmed yet.
+                    </p>
 
-                      <textarea
-                        id="clientNote"
-                        name="clientNote"
-                        rows={4}
-                        maxLength={500}
-                        placeholder="Example: Short almond shape, nude base with simple chrome details."
-                        className="w-full resize-none rounded-xl border border-stone-300 bg-white px-4 py-3 leading-6 outline-none placeholder:text-stone-400 focus:border-rose-400"
-                      />
-                    </div>
-                  </div>
-                </section>
+                    <p className="mt-2 text-sm leading-6 text-white/55">
+                      MOHA will review your preferred time and confirm the
+                      appointment directly with you.
+                    </p>
 
-                <section className="rounded-3xl bg-stone-950 p-6 text-white">
-                  <p className="text-sm font-semibold">
-                    Your appointment is not confirmed yet.
-                  </p>
+                    <button
+                      type="submit"
+                      className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#f7f3ef] px-5 py-3.5 font-semibold text-[#141014] transition hover:bg-[#efb0c4] sm:w-auto"
+                    >
+                      Send booking request
+                      <ArrowUpRight className="h-4 w-4" />
+                    </button>
+                  </section>
+                </form>
+              )}
+            </section>
 
-                  <p className="mt-2 text-sm leading-6 text-stone-400">
-                    MOHA will review your preferred time and confirm the
-                    appointment directly with you.
-                  </p>
+            <aside className="h-fit rounded-[1.8rem] border border-white/10 bg-[#181318] p-6 sm:p-7 lg:sticky lg:top-24">
+              <p className="text-xs font-bold tracking-[0.25em] text-[#d97b98]">
+                MOHA HOURS
+              </p>
 
-                  <button
-                    type="submit"
-                    className="mt-6 w-full rounded-xl bg-rose-500 px-5 py-3.5 font-semibold text-white transition hover:bg-rose-400"
+              <h2 className="moha-display mt-3 text-3xl leading-none tracking-[-0.03em] text-white">
+                Plan your visit
+              </h2>
+
+              <div className="mt-6 space-y-3">
+                {businessHours?.map((hours) => (
+                  <div
+                    key={hours.day_of_week}
+                    className="flex items-center justify-between gap-4 text-sm"
                   >
-                    Send booking request
-                  </button>
-                </section>
-              </form>
-            )}
-          </section>
+                    <span className="font-medium text-white/75">
+                      {dayNames[hours.day_of_week]}
+                    </span>
 
-          <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-            <p className="text-xs font-bold tracking-[0.25em] text-rose-500">
-              MOHA HOURS
-            </p>
+                    <span className="text-right text-white/45">
+                      {hours.is_open
+                        ? `${formatBusinessTime(hours.opens_at)} – ${formatBusinessTime(hours.closes_at)}`
+                        : "Closed"}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            <h2 className="mt-3 text-xl font-bold">Plan your visit</h2>
+              <div className="mt-7 rounded-[1.2rem] border border-[#d97b98]/25 bg-[#d97b98]/10 p-4">
+                <p className="text-sm font-semibold text-[#efb0c4]">
+                  Booking requests
+                </p>
 
-            <div className="mt-6 space-y-3">
-              {businessHours?.map((hours) => (
-                <div
-                  key={hours.day_of_week}
-                  className="flex items-center justify-between gap-4 text-sm"
-                >
-                  <span className="font-medium text-stone-700">
-                    {dayNames[hours.day_of_week]}
-                  </span>
-
-                  <span className="text-right text-stone-500">
-                    {hours.is_open
-                      ? `${formatBusinessTime(hours.opens_at)} – ${formatBusinessTime(hours.closes_at)}`
-                      : "Closed"}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-7 rounded-2xl bg-rose-50 p-4">
-              <p className="text-sm font-semibold text-rose-900">
-                Booking requests
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-rose-800">
-                Select a preferred time. MOHA will confirm availability before
-                your appointment is final.
-              </p>
-            </div>
-          </aside>
+                <p className="mt-2 text-sm leading-6 text-white/65">
+                  Select a preferred time. MOHA will confirm availability
+                  before your appointment is final.
+                </p>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function BookingStep({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <div className="text-[#d97b98]">{icon}</div>
+
+      <p className="mt-4 text-sm font-semibold text-white">{title}</p>
+
+      <p className="mt-1 text-xs leading-5 text-white/50">{description}</p>
+    </article>
   );
 }
