@@ -55,6 +55,7 @@ export default async function Home() {
   const [
     { data: services, error: servicesError },
     { data: businessHours, error: businessHoursError },
+    { data: siteImages, error: siteImagesError },
   ] = await Promise.all([
     supabase
       .from("services")
@@ -69,6 +70,22 @@ export default async function Home() {
       .from("business_hours")
       .select("day_of_week, is_open, opens_at, closes_at")
       .order("day_of_week", { ascending: true }),
+    supabase
+      .from("site_images")
+      .select(
+        `
+      id,
+      placement,
+      service_id,
+      storage_path,
+      title,
+      subtitle,
+      alt_text,
+      sort_order
+    `,
+      )
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
   ]);
 
   if (servicesError) {
@@ -84,6 +101,35 @@ export default async function Home() {
       businessHoursError.message,
     );
   }
+  if (siteImagesError) {
+    console.error(
+      "Could not load MOHA website images:",
+      siteImagesError.message,
+    );
+  }
+
+  const publicSiteImages = (siteImages ?? []).map((image) => {
+    const {
+      data: { publicUrl },
+    } = supabase.storage
+      .from("moha-site-media")
+      .getPublicUrl(image.storage_path);
+
+    return {
+      ...image,
+      publicUrl,
+    };
+  });
+
+  const galleryImages = publicSiteImages.filter(
+    (image) => image.placement === "gallery",
+  );
+
+  const serviceImagesByServiceId = new Map(
+    publicSiteImages
+      .filter((image) => image.placement === "service" && image.service_id)
+      .map((image) => [image.service_id!, image]),
+  );
 
   const photoSources = Array.from(
     new Set(
@@ -289,60 +335,75 @@ export default async function Home() {
           </div>
         ) : (
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service, index) => (
-              <article
-                key={service.id}
-                className="group relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#161217] p-6 transition duration-300 hover:-translate-y-1 hover:border-[#d97b98]/70 hover:bg-[#20141b]"
-              >
-                <p className="absolute right-6 top-5 text-5xl font-semibold tracking-[-0.08em] text-white/[0.04]">
-                  0{index + 1}
-                </p>
+            {services.map((service, index) => {
+              const serviceImage = serviceImagesByServiceId.get(service.id);
+              return (
+                <article
+                  key={service.id}
+                  className="group relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#161217] p-6 transition duration-300 hover:-translate-y-1 hover:border-[#d97b98]/70 hover:bg-[#20141b]"
+                >
+                  {serviceImage ? (
+                    <div className="relative -mx-6 -mt-6 mb-6 aspect-[4/3] overflow-hidden">
+                      <img
+                        src={serviceImage.publicUrl}
+                        alt={serviceImage.alt_text}
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      />
 
-                {service.category ? (
-                  <p className="text-xs font-bold tracking-[0.18em] text-[#d97b98]">
-                    {service.category.toUpperCase()}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#161217] via-transparent to-transparent" />
+                    </div>
+                  ) : null}
+
+                  <p className="absolute right-6 top-5 text-5xl font-semibold tracking-[-0.08em] text-white/[0.04]">
+                    0{index + 1}
                   </p>
-                ) : (
-                  <p className="text-xs font-bold tracking-[0.18em] text-[#d97b98]">
-                    MOHA SERVICE
+
+                  {service.category ? (
+                    <p className="text-xs font-bold tracking-[0.18em] text-[#d97b98]">
+                      {service.category.toUpperCase()}
+                    </p>
+                  ) : (
+                    <p className="text-xs font-bold tracking-[0.18em] text-[#d97b98]">
+                      MOHA SERVICE
+                    </p>
+                  )}
+
+                  <h3 className="moha-display mt-5 text-3xl leading-none tracking-[-0.035em]">
+                    {service.name}
+                  </h3>
+
+                  <p className="mt-5 min-h-14 text-sm leading-6 text-white/60">
+                    {service.description ||
+                      "A polished MOHA service designed around your style."}
                   </p>
-                )}
 
-                <h3 className="moha-display mt-5 text-3xl leading-none tracking-[-0.035em]">
-                  {service.name}
-                </h3>
+                  <div className="mt-8 flex items-end justify-between border-t border-white/10 pt-5">
+                    <div>
+                      <p className="text-xl font-semibold text-white">
+                        KSh {service.price_kes.toLocaleString()}
+                      </p>
 
-                <p className="mt-5 min-h-14 text-sm leading-6 text-white/60">
-                  {service.description ||
-                    "A polished MOHA service designed around your style."}
-                </p>
+                      <p className="mt-1 text-sm text-white/45">
+                        {service.duration_minutes} min
+                      </p>
+                    </div>
 
-                <div className="mt-8 flex items-end justify-between border-t border-white/10 pt-5">
-                  <div>
-                    <p className="text-xl font-semibold text-white">
-                      KSh {service.price_kes.toLocaleString()}
-                    </p>
-
-                    <p className="mt-1 text-sm text-white/45">
-                      {service.duration_minutes} min
-                    </p>
+                    <Link
+                      href="/book"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white transition group-hover:border-[#efb0c4] group-hover:bg-[#efb0c4] group-hover:text-[#141014]"
+                      aria-label={`Book ${service.name}`}
+                    >
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
                   </div>
-
-                  <Link
-                    href="/book"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white transition group-hover:border-[#efb0c4] group-hover:bg-[#efb0c4] group-hover:text-[#141014]"
-                    aria-label={`Book ${service.name}`}
-                  >
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
 
-      {mohaPublic.featuredLooks.length > 0 ? (
+      {galleryImages.length > 0 ? (
         <section className="border-y border-white/10 bg-[#121014] py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             <div className="flex flex-col justify-between gap-7 md:flex-row md:items-end">
@@ -366,17 +427,15 @@ export default async function Home() {
             </div>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {mohaPublic.featuredLooks.map((look, index) => (
+              {galleryImages.map((image) => (
                 <article
-                  key={`${look.image}-${index}`}
+                  key={image.id}
                   className="group relative aspect-[4/5] overflow-hidden rounded-[1.8rem] bg-[#20141b]"
                 >
-                  <Image
-                    src={look.image}
-                    alt={look.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition duration-700 group-hover:scale-105"
+                  <img
+                    src={image.publicUrl}
+                    alt={image.alt_text}
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
@@ -387,12 +446,12 @@ export default async function Home() {
                     </p>
 
                     <h3 className="moha-display mt-3 text-3xl leading-none">
-                      {look.title}
+                      {image.title}
                     </h3>
 
-                    {look.subtitle ? (
+                    {image.subtitle ? (
                       <p className="mt-2 text-sm text-white/70">
-                        {look.subtitle}
+                        {image.subtitle}
                       </p>
                     ) : null}
                   </div>

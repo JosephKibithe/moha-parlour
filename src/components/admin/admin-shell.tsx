@@ -9,7 +9,8 @@ type AdminShellProps = {
     | "services"
     | "staff"
     | "appointments"
-    | "customers";
+    | "customers"
+    | "media";
 };
 
 const navigation = [
@@ -18,6 +19,7 @@ const navigation = [
   { label: "Services", href: "/admin/services", key: "services" },
   { label: "Technicians", href: "/admin/staff", key: "staff" },
   { label: "Customers", href: "/admin/customers", key: "customers" },
+  { label: "Website Media", href: "/admin/media", key: "media" },
 ] as const;
 
 export function AdminShell({ children, activePage }: AdminShellProps) {
